@@ -1,0 +1,5 @@
+gradio
+openai
+numpy
+#markdown
+#latex2mathml
