@@ -1,5 +1,6 @@
 gradio
 openai
 numpy
+python-magic
 #markdown
 #latex2mathml

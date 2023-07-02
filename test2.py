@@ -1,50 +1,145 @@
+import os
+
 import gradio as gr
+import nltk
 import openai
-import random
-import time
 
-# Set up OpenAI API key
-openai.api_key = "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"
+openai_engines = ["text-davinci-003", "code-davinci-002", "text-curie-001"]
+prompt = "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: Hello, who are you?\nAI: I am an AI created by OpenAI. How can I help you today?"
 
-system_message = {"role": "system", "content": "You are a helpful assistant."}
 
-with gr.Blocks() as demo:
-    chatbot = gr.Chatbot()
-    msg = gr.Textbox()
-    clear = gr.Button("Clear")
-
-    state = gr.State([])
-
-    def user(user_message, history):
-        return "", history + [[user_message, None]]
-
-    def bot(history, messages_history):
-        user_message = history[-1][0]
-        bot_message, messages_history = ask_gpt(user_message, messages_history)
-        messages_history += [{"role": "assistant", "content": bot_message}]
-        history[-1][1] = bot_message
-        time.sleep(1)
-
-        return history, messages_history
-
-    def ask_gpt(message, messages_history):
-        messages_history += [{"role": "user", "content": message}]
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages_history,
-            temperature=1.0,
-        )
-        return response['choices'][0]['message']['content'], messages_history
-
-    def init_history(messages_history):
-        messages_history = []
-        messages_history += [system_message]
-        return messages_history
-
-    msg.submit(user, [msg, chatbot], [msg, chatbot], queue=False).then(
-        bot, [chatbot, state], [chatbot, state]
+def openai_completion(
+    prompt,
+    openai_token=None,
+    engine="text-davinci-003",
+    temperature=0.9,
+    max_tokens=150,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0.6,
+    stop=[" Human:", " AI:"],
+):
+    openai.api_key = openai_token
+    response = openai.Completion.create(
+        engine=engine,
+        prompt=prompt,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        top_p=top_p,
+        frequency_penalty=frequency_penalty,
+        presence_penalty=presence_penalty,
+        stop=stop,
     )
+    return response.choices[0].text
 
-    clear.click(lambda: None, None, chatbot, queue=False).success(init_history, [state], [state])
 
-demo.launch()
+def chatgpt3(
+    prompt,
+    history,
+    openai_token,
+    engine,
+    temperature,
+    max_tokens,
+    top_p,
+    frequency_penalty,
+    presence_penalty,
+):
+    history = history or []
+    history_prompt = list(sum(history, ()))
+    history_prompt.append(f"\nHuman: {prompt}")
+    inp = " ".join(history_prompt)
+
+    # keep the prompt length limited to ~2000 tokens
+    inp = " ".join(inp.split()[-2000:])
+
+    # remove duplicate sentences
+    sentences = nltk.sent_tokenize(inp)
+    sentence_dict = {}
+    for i, s in enumerate(sentences):
+        if s not in sentence_dict:
+            sentence_dict[s] = i
+
+    unique_sentences = [sentences[i] for i in sorted(sentence_dict.values())]
+    inp = " ".join(unique_sentences)
+
+    # create the output with openai
+    out = openai_completion(
+        inp,
+        openai_token,
+        engine,
+        temperature,
+        max_tokens,
+        top_p,
+        frequency_penalty,
+        presence_penalty,
+    )
+    history.append((inp, out))
+    return history, history, ""
+
+
+with gr.Blocks(title="Chat with GPT-3") as block:
+    gr.Markdown("## Chat with GPT-3")
+    with gr.Row():
+        with gr.Column():
+            openai_token = gr.Textbox(label="OpenAI API Key", value=os.getenv("OPENAI_API_KEY"))
+            engine = gr.Dropdown(
+                label="GPT3 Engine",
+                choices=openai_engines,
+                value="text-davinci-003",
+            )
+            temperature = gr.Slider(label="Temperature", minimum=0, maximum=1, step=0.1, value=0.9)
+            max_tokens = gr.Slider(label="Max Tokens", minimum=10, maximum=400, step=10, value=150)
+            top_p = gr.Slider(label="Top P", minimum=0, maximum=1, step=0.1, value=1)
+            frequency_penalty = gr.Slider(
+                label="Frequency Penalty",
+                minimum=0,
+                maximum=1,
+                step=0.1,
+                value=0,
+            )
+            presence_penalty = gr.Slider(
+                label="Presence Penalty",
+                minimum=0,
+                maximum=1,
+                step=0.1,
+                value=0.6,
+            )
+
+        with gr.Column():
+            chatbot = gr.Chatbot()
+            message = gr.Textbox(value=prompt, label="Type your question here:")
+            state = gr.State()
+            message.submit(
+                fn=chatgpt3,
+                inputs=[
+                    message,
+                    state,
+                    openai_token,
+                    engine,
+                    temperature,
+                    max_tokens,
+                    top_p,
+                    frequency_penalty,
+                    presence_penalty,
+                ],
+                outputs=[chatbot, state, message],
+            )
+            submit = gr.Button("Send")
+            submit.click(
+                chatgpt3,
+                inputs=[
+                    message,
+                    state,
+                    openai_token,
+                    engine,
+                    temperature,
+                    max_tokens,
+                    top_p,
+                    frequency_penalty,
+                    presence_penalty,
+                ],
+                outputs=[chatbot, state, message],
+            )
+
+if __name__ == "__main__":
+    block.launch(debug=True)

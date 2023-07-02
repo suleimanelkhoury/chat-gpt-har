@@ -1,3 +1,4 @@
+# Prompts
 def get_functions():
     return {
         "Function 1": {

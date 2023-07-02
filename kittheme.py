@@ -1,5 +1,6 @@
 import gradio as gr
 
+# Theme with the colors of the university
 theme = gr.themes.Base(
     primary_hue=gr.themes.Color(c100="#b1ded6", c200="#7fc9bc", c300="#4db4a2", c400="#26a38e", c50="#dff2ef", c500="#01937c", c600="#008670", c700="#007660", c800="#006652", c900="#004a37", c950="#134034"),
     secondary_hue=gr.themes.Color(c100="#b1ded6", c200="#7fc9bc", c300="#4db4a2", c400="#26a38e", c50="#dff2ef", c500="#01937c", c600="#008670", c700="#007660", c800="#006652", c900="#134e4a", c950="#12443e"),
