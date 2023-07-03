@@ -5,7 +5,8 @@ import kittheme as kit
 import logging
 import base64
 # Key
-openai.api_key = "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"
+openai.api_key = "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"
+#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
 
 # String variables to use throughout the code
 title_html = """<h1><center>CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR) </center></h1>"""
@@ -81,7 +82,7 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
     state = gr.State([])  # used to store the message history of each user session.
     with gr.Row():
         with gr.Column(scale=2):
-            chatbot = gr.Chatbot(value=[], elem_id="chatbot", label=f"Current model: ").style(height=800)
+            chatbot = gr.Chatbot(value=[], elem_id="chatbot").style(height=800)
         with gr.Column(scale=1):
             with gr.Row():
                 drop = gr.Dropdown(available_models, value="gpt-3.5-turbo", label="model")
@@ -90,9 +91,11 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                     msg = gr.Textbox(placeholder="Enter text here").style(container=False)
                 with gr.Row():
                     submit = gr.Button("Submit", variant="primary")
+                    # submit with click
                     submit.click(user, [msg, chatbot], [msg, chatbot]).then(
                         bot, [chatbot, state, drop], [chatbot, state]
                     )
+                    # submit with enter
                     msg.submit(user, [msg, chatbot], [msg, chatbot], queue=False).then(
                         bot, [chatbot, state, drop], [chatbot, state]
                     )
