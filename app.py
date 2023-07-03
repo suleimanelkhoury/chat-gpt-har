@@ -17,7 +17,7 @@ system_message = {"role": "system", "content": "You are a helpful assistant."}
 
 
 available_models = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-4", "gpt-4-32k", "text-davinci-003", "text-curie-001",
-                    "text-babbage-001", "text-ada-001"]
+                    "text-babbage-001", "text-ada-001",""]
 # logging
 os.makedirs("gpt_log", exist_ok=True)
 try:
@@ -39,8 +39,11 @@ def user(user_message, history):
 # updates the message history as the conversation progresses
 def bot(history, messages_history, model):
     user_message = history[-1][0]
+    print(history)
+    print(messages_history)
     bot_message, messages_history = ask_gpt(user_message, messages_history, model)
     messages_history += [{"role": "assistant", "content": bot_message}]
+    print(messages_history)
     history[-1][1] = bot_message
     print("history: ", history, "messages_history: ", messages_history)
     return history, messages_history
@@ -74,7 +77,7 @@ def view_file(file_data):
         return f"<embed src='data:application/pdf;base64,{b64_data}' type='application/pdf' width='100%' height='800px' />"
     else:
         return f"<embed src='data:text/plain;base64,{b64_data}' type='text/plain' width='100%' height='500px' />"
-
+model2 = ""
 # main interface
 with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
     gr.Markdown(title_html)
@@ -86,6 +89,7 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
         with gr.Column(scale=1):
             with gr.Row():
                 drop = gr.Dropdown(available_models, value="gpt-3.5-turbo", label="model")
+                #drop.select(fn= lambda x: x , inputs=drop, outputs=model2)
             with gr.Tab("text area") as area_input_primary:
                 with gr.Row():
                     msg = gr.Textbox(placeholder="Enter text here").style(container=False)
@@ -109,15 +113,19 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                     upload_button = gr.UploadButton("Click to Upload a File", file_types=["file"])
                     upload_button.upload(upload_file, upload_button, file_output)
                     viewer_button = gr.Button("View file")
+                    txt = gr.Textbox(file_output)
                     file_out = gr.HTML()
                     viewer_button.click(view_file, inputs=file_output, outputs=file_out)
             with gr.Accordion("Basic functional area", open=True) as area_basic_fn:
                 # gr.Markdown("Functions area")
                 with gr.Row():
                     for k in functions:
-                        if ("Visible" in functions[k]) and (not functions[k]["Visible"]): continue
-                        variant = functions[k]["Color"] if "Color" in functions[k] else "secondary"
+                        variant = functions[k]
                         functions[k]["Button"] = gr.Button(k, variant=variant)
+                        click_handle = functions[k]["Button"].click(user, [msg, chatbot], [msg, chatbot]).then(
+                        bot, [chatbot, state, drop], [chatbot, state]
+                        )
+                        #cancel_handles.append(click_handle)
     # Ribbon displays the interaction between the switch and the ribbon
 
 demo.launch(debug=True)
