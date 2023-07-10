@@ -39,8 +39,6 @@ def user(user_message, history):
 # updates the message history as the conversation progresses
 def bot(history, messages_history, model):
     user_message = history[-1][0]
-    print(history)
-    print(messages_history)
     bot_message, messages_history = ask_gpt(user_message, messages_history, model)
     messages_history += [{"role": "assistant", "content": bot_message}]
     print(messages_history)
@@ -77,7 +75,6 @@ def view_file(file_data):
         return f"<embed src='data:application/pdf;base64,{b64_data}' type='application/pdf' width='100%' height='800px' />"
     else:
         return f"<embed src='data:text/plain;base64,{b64_data}' type='text/plain' width='100%' height='500px' />"
-model2 = ""
 # main interface
 with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
     gr.Markdown(title_html)
@@ -95,11 +92,9 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                     msg = gr.Textbox(placeholder="Enter text here").style(container=False)
                 with gr.Row():
                     submit = gr.Button("Submit", variant="primary")
-                    # submit with click
                     submit.click(user, [msg, chatbot], [msg, chatbot]).then(
                         bot, [chatbot, state, drop], [chatbot, state]
                     )
-                    # submit with enter
                     msg.submit(user, [msg, chatbot], [msg, chatbot], queue=False).then(
                         bot, [chatbot, state, drop], [chatbot, state]
                     )
@@ -120,9 +115,8 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                 #gr.Markdown("Functions area")
                 with gr.Row():
                     for k in functions:
-                        variant = functions[k]['Color']
+                        variant = functions[k]
                         functions[k]["Button"] = gr.Button(k, variant=variant)
-                        # hier müsste eigentlich msg durch functions[k]["Prefix"] ersetzt werden, aber das funktioniert nicht
                         click_handle = functions[k]["Button"].click(user, [msg, chatbot], [msg, chatbot]).then(
                         bot, [chatbot, state, drop], [chatbot, state]
                         )
