@@ -117,11 +117,12 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                     file_out = gr.HTML()
                     viewer_button.click(view_file, inputs=file_output, outputs=file_out)
             with gr.Accordion("Basic functional area", open=True) as area_basic_fn:
-                # gr.Markdown("Functions area")
+                #gr.Markdown("Functions area")
                 with gr.Row():
                     for k in functions:
-                        variant = functions[k]
+                        variant = functions[k]['Color']
                         functions[k]["Button"] = gr.Button(k, variant=variant)
+                        # hier müsste eigentlich msg durch functions[k]["Prefix"] ersetzt werden, aber das funktioniert nicht
                         click_handle = functions[k]["Button"].click(user, [msg, chatbot], [msg, chatbot]).then(
                         bot, [chatbot, state, drop], [chatbot, state]
                         )
