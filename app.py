@@ -11,13 +11,13 @@ openai.api_key = "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"
 # String variables to use throughout the code
 title_html = """<h1><center>CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR) </center></h1>"""
 description = """<p><center>The following code extracts and analyzes information from Human Activity Recognition (HAR) datasets</center></p>"""
-#model = "gpt-3.5-turbo"
+pybliometrics ="""<p><center>Key needed for pybliometrics.cfg</b></center></p>"""
+code_area = """<p><center>Execute Code Area</b></center></p>"""
 system_message = {"role": "system", "content": "You are a helpful assistant."}
 # Query records, python version 3.9+ is recommended (the newer the better)
 
 
-available_models = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-4", "gpt-4-32k", "text-davinci-003", "text-curie-001",
-                    "text-babbage-001", "text-ada-001",""]
+available_models = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-3.5-turbo-0613","gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613"]
 # logging
 os.makedirs("gpt_log", exist_ok=True)
 try:
@@ -27,9 +27,8 @@ except:
 print("All query records will be automatically saved in the local directory./gpt_log/chat_secrets.log")
 
 # Import functional prompts
-from functions import get_functions
-
-functions = get_functions()
+from functions import related_papers, related_papers_with_scholarly, related_papers_with_pybliometrics, algorithm_recommendation\
+    , data_exploration, descriptive_statistics, read_n, data_exploration_pipeline, execute
 
 # updates user message
 def user(user_message, history):
@@ -41,7 +40,6 @@ def bot(history, messages_history, model):
     user_message = history[-1][0]
     bot_message, messages_history = ask_gpt(user_message, messages_history, model)
     messages_history += [{"role": "assistant", "content": bot_message}]
-    print(messages_history)
     history[-1][1] = bot_message
     print("history: ", history, "messages_history: ", messages_history)
     return history, messages_history
@@ -52,7 +50,7 @@ def ask_gpt(message, messages_history, model):
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages_history,
-        temperature=1.0
+        temperature=0.1
     )
     return response['choices'][0]['message']['content'], messages_history
 
@@ -75,6 +73,8 @@ def view_file(file_data):
         return f"<embed src='data:application/pdf;base64,{b64_data}' type='application/pdf' width='100%' height='800px' />"
     else:
         return f"<embed src='data:text/plain;base64,{b64_data}' type='text/plain' width='100%' height='500px' />"
+
+
 # main interface
 with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
     gr.Markdown(title_html)
@@ -87,9 +87,10 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
             with gr.Row():
                 drop = gr.Dropdown(available_models, value="gpt-3.5-turbo", label="model")
                 #drop.select(fn= lambda x: x , inputs=drop, outputs=model2)
+            """
             with gr.Tab("text area") as area_input_primary:
                 with gr.Row():
-                    msg = gr.Textbox(placeholder="Enter text here").style(container=False)
+                    msg = gr.Textbox(placeholder="Enter text here",label="Chat Box").style(container=False)
                 with gr.Row():
                     submit = gr.Button("Submit", variant="primary")
                     submit.click(user, [msg, chatbot], [msg, chatbot]).then(
@@ -108,19 +109,100 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                     upload_button = gr.UploadButton("Click to Upload a File", file_types=["file"])
                     upload_button.upload(upload_file, upload_button, file_output)
                     viewer_button = gr.Button("View file")
-                    txt = gr.Textbox(file_output)
                     file_out = gr.HTML()
                     viewer_button.click(view_file, inputs=file_output, outputs=file_out)
-            with gr.Accordion("Basic functional area", open=True) as area_basic_fn:
-                #gr.Markdown("Functions area")
-                with gr.Row():
-                    for k in functions:
-                        variant = functions[k]
-                        functions[k]["Button"] = gr.Button(k, variant=variant)
-                        click_handle = functions[k]["Button"].click(user, [msg, chatbot], [msg, chatbot]).then(
-                        bot, [chatbot, state, drop], [chatbot, state]
+            """
+            with gr.Row():
+                with gr.Tab("Related Work Listing") as related_work_listing:
+                    with gr.Row():
+                        paper_name = gr.Textbox(placeholder="Enter Paper Name Here",label="Paper Name").style(container=False)
+                        number_of_papers = gr.Slider(2, 20, value=10, label="Count",step=1)
+                with gr.Tab("Important Information Presentation:") as important_information_presentation:
+                    with gr.Row():
+                        paper_name = gr.Textbox(placeholder="Enter Paper Name Here",label="Paper Name").style(container=False)
+                        number_of_papers = gr.Slider(2, 20, value=10, label="Count",step=1)
+                    #gr.Markdown("Functions area")
+                    with gr.Row():
+                        pure_gpt = gr.Button("Pure GPT", variant="secondary")
+                        combining_result = gr.Textbox(visible=False)
+                        click_handle = pure_gpt.click(related_papers, [paper_name, number_of_papers], combining_result).then(user, [combining_result, chatbot], [combining_result, chatbot]).then(
+                                bot, [chatbot, state, drop], [chatbot, state]
                         )
-                        #cancel_handles.append(click_handle)
+                        with_scholarly = gr.Button("With Scholarly", variant="secondary")
+                        combining_result2 = gr.Textbox(visible=False)
+                        click_handle2 = pure_gpt.click(related_papers_with_scholarly, [paper_name, number_of_papers], combining_result2).then(user, [combining_result2, chatbot], [combining_result2, chatbot]).then(
+                                bot, [chatbot, state, drop], [chatbot, state]
+                        )
+                        with gr.Column(scale=1):
+                            with_pybliometrics = gr.Button("With Pybliometrics", variant="primary")
+                            combining_result3 = gr.Textbox(visible=False)
+                            click_handle3 = with_pybliometrics.click(related_papers_with_pybliometrics, [paper_name, number_of_papers], combining_result3).then(user, [combining_result3, chatbot], [combining_result3, chatbot]).then(
+                                    bot, [chatbot, state, drop], [chatbot, state]
+                            )
+                            gr.Markdown(pybliometrics)
+                with gr.Tab("Tool and Algorithm Recommendations:") as tool_and_algorithm_recommendation:
+                    with gr.Row():
+                        description = gr.Textbox(placeholder="Enter sample Description", label="Sample").style(container=False)
+                        number_of_algorithms = gr.Slider(2, 20, value=10, label="Count",step=1)
+                    with gr.Row():
+                        algorithm_gpt = gr.Button("Algorithm Recommendation Prompt", variant="secondary")
+                        combining_result4 = gr.Textbox(visible=False)
+                        click_handle4 = algorithm_gpt.click(algorithm_recommendation, [description, number_of_algorithms], combining_result4).then(user, [combining_result4, chatbot], [combining_result4, chatbot]).then(
+                                bot, [chatbot, state, drop], [chatbot, state]
+                        )
+                with gr.Tab("Data Exploration Results") as data_exploration_results:
+                    with gr.Row():
+                        description2 = gr.Textbox(placeholder="Enter Dataset Description", label="Description").style(container=False)
+                        sample_description = gr.Textbox(placeholder="Enter Sample Description", label="Sample").style(container=False)
+                        with gr.Column(scale=1):
+                            number_of_lines = gr.Slider(2, 10, value=5, label="Count",step=1)
+                    with gr.Column(container=False):
+                        file_output = gr.File(type="binary")
+                        upload_button = gr.UploadButton("Click to Upload a File", file_types=["file"])
+                        upload_button.upload(upload_file, upload_button, file_output, show_progress=True)
+                        viewer_button = gr.Button("View file")
+                        file_out = gr.HTML()
+                        viewer_button.click(view_file, inputs=file_output, outputs=file_out)
+                    with gr.Row():
+                        data_exploration_prompt = gr.Button("Data Exploration Prompt", variant="secondary")
+                        file_header = gr.Textbox(visible=False)
+                        combining_result5 = gr.Textbox(visible=False)
+                        click_handle5 = data_exploration_prompt.click(
+                                read_n,[file_output,number_of_lines],file_header).then(
+                                data_exploration, [description2, file_header, number_of_lines], combining_result5).then(
+                                user, [combining_result5, chatbot], [combining_result5, chatbot]).then(
+                                bot, [chatbot, state, drop], [chatbot, state]
+                        )
+                        descriptive_statistics_prompt = gr.Button("Descriptive Statistics Prompt", variant="secondary")
+                        file_header2 = gr.Textbox(visible=False)
+                        combining_result6 = gr.Textbox(visible=False)
+                        click_handle6 = descriptive_statistics_prompt.click(
+                                read_n,[file_output,number_of_lines],file_header2).then(
+                                descriptive_statistics, [description2, file_header2, number_of_lines], combining_result6).then(
+                                user, [combining_result6, chatbot], [combining_result6, chatbot]).then(
+                                bot, [chatbot, state, drop], [chatbot, state]
+                        )
+                    with gr.Row():
+                        pipeline1 = gr.Button("Pipeline", variant="primary")
+                        file_header3 = gr.Textbox(visible=False)
+                        sample_desc = gr.Textbox(visible=False)
+                        combining_result7 = gr.Textbox(visible=False)
+                        # data_exploration_pipeline(description,sample,sample_description):
+                        click_handle7 = pipeline1.click(read_n,[file_output,number_of_lines],file_header3).then(
+                            data_exploration_pipeline,[chatbot,description2,file_header2,sample_desc,number_of_lines],chatbot
+                        )
+                with gr.Tab("Data Format Transformation") as data_format_transformation:
+                    with gr.Row():
+                        paper_name = gr.Textbox(placeholder="Enter Paper Name Here",label="Paper Name").style(container=False)
+    with gr.Row():
+        #gr.Markdown(code_area)
+        with gr.Accordion("Code Display Area", open=False):
+            with gr.Row():
+                code = gr.Code()
+                plot = gr.Plot()
+            with gr.Row():
+                execute1 = gr.Button("Execute Code", variant="secondary")
+                execute_handle = execute1.click(execute,code,plot)
     # Ribbon displays the interaction between the switch and the ribbon
 
 demo.launch(debug=True)

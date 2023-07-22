@@ -2,5 +2,7 @@ gradio
 openai
 numpy
 python-magic
+scholarly
+pybliometrics
 #markdown
 #latex2mathml

@@ -1,65 +1,24 @@
-import gradio as gr
+from gradio_client import Client
+from PIL import Image
 
-import openai
+# Create a client and specify the API URL
+client = Client("https://huggingface-projects-qr-code-ai-art-generator--58b6vlwzv.hf.space/")
 
-import os
+# Make a prediction
+result = client.predict(
+    "https://my-url-here.com",      # str  in 'QR Code Content' Textbox component
+    "red bus",                 # str  in 'Prompt' Textbox component
+    "blue",                    # str  in 'Negative Prompt' Textbox component
+    1,                         # int | float (numeric value between 0.0 and 50.0) in 'Guidance Scale' Slider component
+    1,                         # int | float (numeric value between 0.0 and 5.0) in 'Controlnet Conditioning Scale' Slider component
+    0.9,                       # int | float (numeric value between 0.0 and 1.0) in 'Strength' Slider component
+    -1,                        # int | float (numeric value between -1 and 9999999999) in 'Seed' Slider component
+    "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",    # str (filepath or URL to image) in 'Init Image (Optional). Leave blank to generate image with SD 2.1' Image component
+    "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",    # str (filepath or URL to image) in 'QR Code Image (Optional). Leave blank to automatically generate QR code' Image component
+    True,                      # bool  in 'Use QR code as init image' Checkbox component
+    "DPM++ Karras SDE",        # str (Option from: ['DPM++ Karras SDE', 'DPM++ Karras', 'Heun', 'Euler', 'DDIM', 'DEIS']) in 'Sampler' Dropdown component
+    fn_index=0
+)
 
-import json
-
-openai.api_key = "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"
-model="gpt-3.5-turbo",
-messages=[
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Who won the world series in 2020?"},
-    {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
-    {"role": "user", "content": "Where was it played?"}
-]
-
-def add_text(history, text):
-    global messages  #message[list] is defined globally
-    history = history + [(text,'')]
-    messages = messages + [{"role":'user', 'content': text}]
-    return history, ""
-def generate_response(history, model ):
-        global messages, cost
-
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            temperature=1.0,
-        )
-
-        response_msg = response.choices[0].message.content
-        cost = cost + (response.usage['total_tokens'])*(0.002/1000)
-        messages = messages + [{"role":'assistant', 'content': response_msg}]
-
-        for char in response_msg:
-
-            history[-1][1] += char
-            #time.sleep(0.05)
-            yield history
-with gr.Blocks() as demo:
-    chatbot = gr.Chatbot(value=[], elem_id="chatbot").style(height=650)
-with gr.Row():
-      with gr.Column(scale=0.85):
-          txt = gr.Textbox(
-                show_label=False,
-                placeholder="Enter text and press enter",
-                ).style(container=False)
-with gr.Blocks() as demo:
-    radio = gr.Radio(value='gpt-3.5-turbo', choices=['gpt-3.5-turbo','gpt-4'], label='models')
-    chatbot = gr.Chatbot(value=[], elem_id="chatbot").style(height=650)
-    with gr.Row():
-        with gr.Column(scale=0.70):
-            txt = gr.Textbox(
-                show_label=False,
-                placeholder="Enter text and press enter, or upload an image",
-            ).style(container=False)
-        with gr.Column(scale=0.10):
-            cost_view = gr.Textbox(label='usage in $',value=0)
-    txt.submit(add_text, [chatbot, txt], [chatbot, txt], queue=False).then(
-            generate_response, inputs =[chatbot,],outputs = chatbot,).then(
-            cost, outputs=cost_view)
-
-demo.queue()
-demo.launch(debug=True)
+# View the image
+Image.open(result)
