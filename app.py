@@ -28,7 +28,7 @@ print("All query records will be automatically saved in the local directory./gpt
 
 # Import functional prompts
 from functions import related_papers, related_papers_with_scholarly, related_papers_with_pybliometrics, algorithm_recommendation\
-    , data_exploration, descriptive_statistics, read_n, data_exploration_pipeline, execute
+    , data_exploration, descriptive_statistics, read_n, data_exploration_pipeline, important_information_pipeline, data_format_transformation, execute
 
 # updates user message
 def user(user_message, history):
@@ -50,7 +50,7 @@ def ask_gpt(message, messages_history, model):
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages_history,
-        temperature=0.1
+        temperature=0
     )
     return response['choices'][0]['message']['content'], messages_history
 
@@ -81,43 +81,23 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
     gr.Markdown(description)
     state = gr.State([])  # used to store the message history of each user session.
     with gr.Row():
-        with gr.Column(scale=2):
+        with gr.Column(scale=2): # main chatbot
             chatbot = gr.Chatbot(value=[], elem_id="chatbot").style(height=800)
         with gr.Column(scale=1):
             with gr.Row():
                 drop = gr.Dropdown(available_models, value="gpt-3.5-turbo", label="model")
-                #drop.select(fn= lambda x: x , inputs=drop, outputs=model2)
-            """
-            with gr.Tab("text area") as area_input_primary:
-                with gr.Row():
-                    msg = gr.Textbox(placeholder="Enter text here",label="Chat Box").style(container=False)
-                with gr.Row():
-                    submit = gr.Button("Submit", variant="primary")
-                    submit.click(user, [msg, chatbot], [msg, chatbot]).then(
-                        bot, [chatbot, state, drop], [chatbot, state]
-                    )
-                    msg.submit(user, [msg, chatbot], [msg, chatbot], queue=False).then(
-                        bot, [chatbot, state, drop], [chatbot, state]
-                    )
-                with gr.Row():
-                    clear = gr.Button("Clear", variant="secondary");
-                    clear.style(size="sm")
-                    clear.click(lambda: None, None, chatbot, queue=False).success(init_history, [state], [state])
-            with gr.Tab("txt or pdf upload") as area_txt_pdf:
-                with gr.Column(container=False):
-                    file_output = gr.File(type="binary")
-                    upload_button = gr.UploadButton("Click to Upload a File", file_types=["file"])
-                    upload_button.upload(upload_file, upload_button, file_output)
-                    viewer_button = gr.Button("View file")
-                    file_out = gr.HTML()
-                    viewer_button.click(view_file, inputs=file_output, outputs=file_out)
-            """
+                clear = gr.Button("Clear", variant="secondary");
+                clear.style(size="sm")
+                clear.click(lambda: None, None, chatbot, queue=False).success(init_history, [state], [state])
             with gr.Row():
-                with gr.Tab("Related Work Listing") as related_work_listing:
+                with gr.Tab("Important Infromation Presentation") as related_work_listing:
                     with gr.Row():
-                        paper_name = gr.Textbox(placeholder="Enter Paper Name Here",label="Paper Name").style(container=False)
-                        number_of_papers = gr.Slider(2, 20, value=10, label="Count",step=1)
-                with gr.Tab("Important Information Presentation:") as important_information_presentation:
+                        description3 = gr.Textbox(placeholder="Enter Dataset Description", label="Description").style(container=False)
+                    with gr.Row():
+                        information_presentation = gr.Button("Get Important Information Pipeline", variant="secondary")
+                        combining_result8 = gr.Textbox(visible=False)
+                        click_handle8 = information_presentation.click(important_information_pipeline, description3, chatbot)
+                with gr.Tab("Related Work Listing") as important_information_presentation:
                     with gr.Row():
                         paper_name = gr.Textbox(placeholder="Enter Paper Name Here",label="Paper Name").style(container=False)
                         number_of_papers = gr.Slider(2, 20, value=10, label="Count",step=1)
@@ -128,13 +108,13 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                         click_handle = pure_gpt.click(related_papers, [paper_name, number_of_papers], combining_result).then(user, [combining_result, chatbot], [combining_result, chatbot]).then(
                                 bot, [chatbot, state, drop], [chatbot, state]
                         )
-                        with_scholarly = gr.Button("With Scholarly", variant="secondary")
+                        with_scholarly = gr.Button("Get Citations With Scholarly", variant="secondary")
                         combining_result2 = gr.Textbox(visible=False)
                         click_handle2 = pure_gpt.click(related_papers_with_scholarly, [paper_name, number_of_papers], combining_result2).then(user, [combining_result2, chatbot], [combining_result2, chatbot]).then(
                                 bot, [chatbot, state, drop], [chatbot, state]
                         )
                         with gr.Column(scale=1):
-                            with_pybliometrics = gr.Button("With Pybliometrics", variant="primary")
+                            with_pybliometrics = gr.Button("Get References With Pybliometrics", variant="primary")
                             combining_result3 = gr.Textbox(visible=False)
                             click_handle3 = with_pybliometrics.click(related_papers_with_pybliometrics, [paper_name, number_of_papers], combining_result3).then(user, [combining_result3, chatbot], [combining_result3, chatbot]).then(
                                     bot, [chatbot, state, drop], [chatbot, state]
@@ -164,12 +144,12 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                         file_out = gr.HTML()
                         viewer_button.click(view_file, inputs=file_output, outputs=file_out)
                     with gr.Row():
-                        data_exploration_prompt = gr.Button("Data Exploration Prompt", variant="secondary")
+                        data_exploration_prompt = gr.Button("Data Visualisation Prompt", variant="secondary")
                         file_header = gr.Textbox(visible=False)
                         combining_result5 = gr.Textbox(visible=False)
                         click_handle5 = data_exploration_prompt.click(
                                 read_n,[file_output,number_of_lines],file_header).then(
-                                data_exploration, [description2, file_header, number_of_lines], combining_result5).then(
+                                data_exploration, [description2, file_header], combining_result5).then(
                                 user, [combining_result5, chatbot], [combining_result5, chatbot]).then(
                                 bot, [chatbot, state, drop], [chatbot, state]
                         )
@@ -178,7 +158,7 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                         combining_result6 = gr.Textbox(visible=False)
                         click_handle6 = descriptive_statistics_prompt.click(
                                 read_n,[file_output,number_of_lines],file_header2).then(
-                                descriptive_statistics, [description2, file_header2, number_of_lines], combining_result6).then(
+                                descriptive_statistics, [description2, file_header2], combining_result6).then(
                                 user, [combining_result6, chatbot], [combining_result6, chatbot]).then(
                                 bot, [chatbot, state, drop], [chatbot, state]
                         )
@@ -189,11 +169,27 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                         combining_result7 = gr.Textbox(visible=False)
                         # data_exploration_pipeline(description,sample,sample_description):
                         click_handle7 = pipeline1.click(read_n,[file_output,number_of_lines],file_header3).then(
-                            data_exploration_pipeline,[chatbot,description2,file_header2,sample_desc,number_of_lines],chatbot
+                            data_exploration_pipeline,[chatbot,description2,file_header3,sample_desc,number_of_lines],chatbot
                         )
-                with gr.Tab("Data Format Transformation") as data_format_transformation:
+                with gr.Tab("Data Format Transformation") as data_transformation:
                     with gr.Row():
-                        paper_name = gr.Textbox(placeholder="Enter Paper Name Here",label="Paper Name").style(container=False)
+                        description3 = gr.Textbox(placeholder="Enter sample Description", label="Sample").style(container=False)
+                        number_of_rows4 = gr.Slider(2, 20, value=5, label="Rows",step=1)
+                        with gr.Column(scale=1):
+                            file_output2 = gr.File(type="binary")
+                            file_header4 = gr.Textbox(visible=False)
+                        upload_button = gr.UploadButton("Click to Select a File", file_types=["file"])
+                        upload_button.upload(upload_file, upload_button, file_output2, show_progress=True)
+                        combining_result9 = gr.Textbox(visible=False)
+                        with gr.Column(scale=1):
+                            data_button = gr.Button("Prompt", variant="primary")
+                            click_handle9 = data_button.click(
+                                    read_n,[file_output,number_of_rows4],file_header4).then(
+                                    data_format_transformation, [description3,file_header4], combining_result9).then(
+                                    user, [combining_result9, chatbot], [combining_result9, chatbot]).then(
+                                    bot, [chatbot, state, drop], [chatbot, state]
+                            )
+
     with gr.Row():
         #gr.Markdown(code_area)
         with gr.Accordion("Code Display Area", open=False):
