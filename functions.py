@@ -11,6 +11,86 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+
+# Exercise 1: important Information Presentation
+
+# includes all the prompts in a sequence as a pipeline
+# the first prompts are used to tell ChatGPT the context that it's an assistant helping a scientific researcher in the context of Human Activity Recognition (HAR).
+# The prompt takes a description of a HAR dataset as an input. This can be a copy of the description found on a website
+# The prompt gives a structured format in which the information found in the HAR description needs to be displayed as well as the required format in JSON.
+def important_information_pipeline(description):
+    context = [
+                    {'role':'system', 'content':'You are an assistant helping a scientific researcher in the context of Human Activity Recognition. The researcher wants help\
+                     with quicker undestanding datasets of human activities. The researcher can give meta input like sensors, column names, features, attributes and \
+                     needs a summary in JSON format for all the meta information about the dataset. The researcher furhter needs recommendations on how to handle\
+                     the data, the steps for data preprocessing, processing algorithms etc.'},
+                    {'role':'assistant', 'content':'Of course! How can I help you with your scientific research in Human Activity Recognition?'},
+                    {'role':'user', 'content':'Help me with understanding a Human Activity Recognition Dataset. Ask me about the specifics\
+                      of a Human Recognition Dataset so you can understand the overall structure of the dataset. After this give me the \
+                      results of the structure of the dataset as a table.'},
+                    { 'role':'user', 'content': f"""
+                      Your task is to extract relevant information and generate a summary of a description \
+                      of a human activity recognition dataset delimited by **. \
+                      For the format of the summary use the generic one below delimited by ``````.\
+                      Insert the relevant information where there are "".
+                     
+                      Human Actvity Dataset: *{description}*
+                       
+                    
+                      ```
+                      Brief Description of the Dataset:
+                      ---------------------------------
+                      "Insert brief description of the Dataset"
+                    
+                      Subjects:
+                      ----------
+                      The dataset includes data from a total of "" subjects. "Description of the subjects"
+                    
+                      Activities:
+                      -----------
+                      There are a total of "" activities performed by the subjects. Each activity is labeled with a specific code or name. "Description of activities"
+                    
+                      Sensors:
+                      --------
+                      "Describtions of Sensors"
+                    
+                      Data Structure:
+                      ---------------
+                      "Describe the Data Structure"
+                    
+                      Summary of Dataset Structure:
+                      -----------------------------
+                      The following table summarizes the structure of the Human Activity Recognition dataset:
+                    
+                      | Attribute   | Description                                                                 |
+                      |-------------|-----------------------------------------------------------------------------|
+                      | Subjects    | "" subjects                                                                 |
+                      | Activities  | "" activities                                                               |
+                      | Sensors     | "" sensors                                                                  |
+                      | Sampling Rate | ""
+                      | Instances   | ""                                                                          |
+                      | Attributes  | ""                                                                          |
+                      | Data Format | ""                                                                          |
+                      | Folder Structure | ""                                                                     |
+                      | Column Structure | ""                                                                     |
+                    
+                      ```
+                      Description: {description}
+                      """},
+                    {'role':'user', 'content':'Take the your output of the previous task display it again and then put it in a JSON format. The format should include \
+                     Brief Description of the Dataset,\
+                     Brief Description of Subjects,\
+                     Brief Description of Activities,\
+                     Brief Description of Sensors,\
+                     Brief Description of Data Structure,\
+                     Summary of Dataset Structure,\
+                     A table with subjects, activities, sensors, sampling rate, instances, attributes, data format, folder structure, column structure.\
+                     Add any additional important information that can be found in the description of the Dataset.'},
+                ]
+    message = get_completion_chat(context, model="gpt-3.5-turbo")
+    return [(message, None)]
+
+
 # Get related papers using just a ChatGPT prompt
 def related_papers(paper_name,k):
     return f"""
@@ -38,6 +118,8 @@ def related_papers(paper_name,k):
                         Before providing the list, start with a caution statement about your limitations and potential shortcomings due to your training data and knowledge cut-off. 
                         Also mention that some of your information might be incorrect. This statement should be a concise text."
                         """
+
+# Exercise 2: Related Work Listing
 
 # Get related papers using a ChatGPT prompt and the results from scholarly
 def related_papers_with_scholarly(paper_name,k):
@@ -116,10 +198,6 @@ def get_citations(paper_name):
         print(f"Error occurred: {e}")
         return []
 
-#paper_name = "Transition-Aware Human Activity Recognition Using Smartphones"
-#citations = get_citations(paper_name)
-#print(citations)
-
 # Get the papers that were referenced in the dataset paper. These are influential papers for the creation of the dataset
 def get_referenced_papers(title):
     title = parse.quote(title)
@@ -142,13 +220,12 @@ def get_referenced_papers(title):
       for reference in references]
     return ref
 
-#print(get_referenced_papers('Basic Economics'))
-
-def algorithm_recommendation(decription,k):
+# Exercise 3: Tool and Algorithm Recommendation
+def algorithm_recommendation(description,k):
     return f"""
                         Given the following dataset description for data in a Human Activity Recognition Context delimited by ''':
                         ''' 
-                        {decription} 
+                        {description} 
                         '''
                         Recommend relevant  algorithms  available for researchers to analyze the dataset, display the first {k} results.
                         Calculate the relevance of the algorithm depending on the relevance for the given dataset.
@@ -156,6 +233,9 @@ def algorithm_recommendation(decription,k):
                         Provide the information in JSON format with the following keys: 
                         algorithm_id, title, description, relevance, documentation_link.
                         """
+
+# Exercise 4: Data Exploration Results
+# Simple Prompt for Data visualisation
 def data_exploration(description,head):
     return f"""
                         in a Human Activity Recognition Context, Given the following description for a dataset delimited by ''':
@@ -170,6 +250,7 @@ def data_exploration(description,head):
                         perform simple data exploration on the sample data, and plot the results for every unit in a plot
                         """
 
+# Simple Prompt for Descriptive Statistics
 def descriptive_statistics(description,head):
     return f"""
                         in a Human Activity Recognition Context, Given the following description for a dataset delimited by ''':
@@ -183,22 +264,8 @@ def descriptive_statistics(description,head):
                         knowing that the data are stored in s01 variable as a string, and using sensor names from the description,
                         perform descriptive statistics on the sample data, and plot all the statistics for every sensor in one plot. output one python code
                         """
-#return the frist n lines of string
-def read_n (file,n):
-    head = '\n'.join(file.decode('utf-8').splitlines()[-n:])
-    return head
 
-# define what choices does chatGPT suggests
-
-# small function for openai response (not so flexible like in our main)
-def get_completion(prompt, model="gpt-3.5-turbo"):
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0, # this is the degree of randomness of the model's output
-    )
-    return response.choices[0].message["content"]
+# Returns what suggestions of data exploration methods does chatGPT suggests
 def data_exploration_choice(description,sample,sample_description,k):
     prompt = f"""
     in a Human Activity Recognition Context, Given the following description for a dataset delimited by ''':
@@ -220,7 +287,7 @@ def data_exploration_choice(description,sample,sample_description,k):
             response_values+= value
     return response_values
 
-# perform the defined method on the description and sample given
+# perform the given data exploration method on the description and on the sample given
 def data_exploration_apply(description,sample,sample_description,method,k):
     prompt = f"""
     in a Human Activity Recognition Context, Given the following description for a dataset delimited by ''':
@@ -240,7 +307,7 @@ def data_exploration_apply(description,sample,sample_description,method,k):
     response = get_completion(prompt)
     return response
 
-# define the whole data exploration pipeline
+# define the whole data exploration pipeline, consisting of: Method Suggestion => Method apply
 def data_exploration_pipeline(history,description,sample,sample_description,k):
     values = data_exploration_choice(description,sample,sample_description,k)
     for i in range(len(values)):
@@ -248,98 +315,41 @@ def data_exploration_pipeline(history,description,sample,sample_description,k):
         message = "#Data exploration choice number " + str(i+1) + ": " + values[i] + "\n"
         output = data_exploration_apply(description,sample,sample_description,values[i],k)
         logging.info(output[output.rfind("```python"):output.rfind("```")-3])
-        message = message + output[output.rfind("```python"):output.rfind("```")-3] +"\n"
+        message = message + output[output.rfind("```python"):output.rfind("```")-3] +"\n"  # rfind crops strings for the pipeline results (to get just the code and nothing else)
         history = history + [(message, None)]
     return history
 
-# includes all the prompts in a sequence as a pipeline
-# the first prompts are used to tell ChatGPT the context that its an assistant helping a scientific researcher in the context of Human Activity Recognition (HAR).
-# The prompt takes a description of a HAR dataset as an input. This can be a copy of the description found on a website
-# The prompt gives a structured format in which the information found in the HAR description needs to be displayed as well as the required format in JSON.
-def important_information_pipeline(description):
-    context =  [
-                    {'role':'system', 'content':'You are an assistant helping a scientific researcher in the context of Human Activity Recognition. The researcher wants help\
-                     with quicker undestanding datasets of human activities. The researcher can give meta input like sensors, column names, features, attributes and \
-                     needs a summary in JSON format for all the meta information about the dataset. The researcher furhter needs recommendations on how to handle\
-                     the data, the steps for data preprocessing, processing algorithms etc.'},
-                    {'role':'assistant', 'content':'Of course! How can I help you with your scientific research in Human Activity Recognition?'},
-                    {'role':'user', 'content':'Help me with understanding a Human Activity Recognition Dataset. Ask me about the specifics\
-                      of a Human Recognition Dataset so you can understand the overall structure of the dataset. After this give me the \
-                      results of the structure of the dataset as a table.'},
-                    { 'role':'user', 'content': f"""
-                      Your task is to extract relevant information and generate a summary of a description \
-                      of a human activity recognition dataset delimited by **. \
-                      For the format of the summary use the generic one below delimited by ``````.\
-                      Insert the relevant information where there are "".
-                     
-                      Human Actvity Dataset: *{description}*
-                       
-                    
-                      ```
-                      Brief Description of the Dataset:
-                      ---------------------------------
-                      "Insert brief description of the Dataset"
-                    
-                      Subjects:
-                      ----------
-                      The dataset includes data from a total of "" subjects. "Description of the subjects"
-                    
-                      Activities:
-                      -----------
-                      There are a total of "" activities performed by the subjects. Each activity is labeled with a specific code or name. "Description of activities"
-                    
-                      Sensors:
-                      --------
-                      "Describtions of Sensors"
-                    
-                      Data Structure:
-                      ---------------
-                      "Describe the Data Structure"
-                    
-                      Summary of Dataset Structure:
-                      -----------------------------
-                      The following table summarizes the structure of the Human Activity Recognition dataset:
-                    
-                      | Attribute   | Description                                                                 |
-                      |-------------|-----------------------------------------------------------------------------|
-                      | Subjects    | "" subjects                                                                 |
-                      | Activities  | "" activities                                                               |
-                      | Sensors     | "" sensors                                                                  |
-                      | Sampling Rate | ""
-                      | Instances   | ""                                                                          |
-                      | Attributes  | ""                                                                          |
-                      | Data Format | ""                                                                          |
-                      | Folder Structure | ""                                                                     |
-                      | Column Structure | ""                                                                     |
-                    
-                      ```
-                      Description: {description}
-                      """},
-                    {'role':'user', 'content':'Take the your output of the previous task display it again and then put it in a JSON format. The format should include \
-                     Brief Description of the Dataset,\
-                     Brief Description of Subjects,\
-                     Brief Description of Activities,\
-                     Brief Description of Sensors,\
-                     Brief Description of Data Structure,\
-                     Summary of Dataset Structure,\
-                     A table with subjects, activities, sensors, sampling rate, instances, attributes, data format, folder structure, column structure.\
-                     Add any additional important information that can be found in the description of the Dataset.'},
-                ]
-    message = get_completion_chat(context, model="gpt-3.5-turbo")
-    return [(message, None)]
-def execute(text):
-    exec(text)
-    return plt
+# Exercise 5: Data Format Transformation
+# Prompt that gets the description and the head of the file, and prints out a standardized data format
+def data_format_transformation(description,head):
+    return  f"""
+                        Given the following dataset description for data in a Human Activity Recognition Context delimited by ''':
+                        ''' 
+                        {description} 
+                        '''
+                        Use the information from this description, as well as the first 5 rows of the data delimited by <>:
+                        <
+                        {head}
+                        >
+                        
+                        The format should look like this:
+                        <Sub_id | Sensor_1 | Sensor_2 | ... | Sensor_n | Activity_ID
+                        1 | 0.93 | 0.88 | ... | 2.33 | 0 
+                        ... | ... | ... | ... | ... | ... > 
+                        
+                        Columns in the .txt file are separated by an empty space. Each sensor is in a separate column. 
+                        These columns do not have headers. 
+                        The column names have to be inferred from the dataset description. 
+                        If there are additional columns in the .txt file you can also include them in the format if you know what the column name should be.
+                        You need to infer the sub_id from the title of the file which will typically be in the format <sub_id.txt>.
+                        The title of this file is {'S01R01.txt'}. Make the sub_id the index of the dataframe.
+                        
+                        Your answer should only consist of a table with the previous specifications
+                        
+                        """
 
-def get_completion_chat(prompt, model):
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=prompt,
-        temperature=0, # this is the degree of randomness of the model's output
-    )
-    return response.choices[0].message["content"]
 
-# Define the data transformation function
+# Depreciated working code (we're not using it since it's a prompt exercise)
 def transform_to_fixed_format(root_path):
     file_list = os.listdir(root_path)
     df_dict = {}
@@ -368,53 +378,34 @@ def transform_to_fixed_format(root_path):
 
     return df_all
 
-def data_format_transformation(description,head):
-    return  f"""
-Given the following dataset description for data in a Human Activity Recognition Context delimited by ''':
-''' 
-{description} 
-'''
-Use the information from this description, as well as the first 5 rows of the data delimited by <>:
-<
-{head}
->
+# other Used Functions (in Pipelines and Buttons)
 
-The format should look like this:
-<Sub_id | Sensor_1 | Sensor_2 | ... | Sensor_n | Activity_ID
-1 | 0.93 | 0.88 | ... | 2.33 | 0 
-... | ... | ... | ... | ... | ... > 
+#return the frist n lines of string
+def read_n (file,n):
+    head = '\n'.join(file.decode('utf-8').splitlines()[-n:])
+    return head
 
-Columns in the .txt file are separated by an empty space. Each sensor is in a separate column. 
-These columns do not have headers. 
-The column names have to be inferred from the dataset description. 
-If there are additional columns in the .txt file you can also include them in the format if you know what the column name should be.
-You need to infer the sub_id from the title of the file which will typically be in the format <sub_id.txt>.
-The title of this file is {'S01R01.txt'}. Make the sub_id the index of the dataframe.
+# small function for openai response (not so flexible like in our main)
+def get_completion(prompt, model="gpt-3.5-turbo"):
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=0, # this is the degree of randomness of the model's output
+    )
+    return response.choices[0].message["content"]
 
-Your answer should only consist of a table with the previous specifications
 
-"""
+# For executing and plotting the results in the plot section
+def execute(text):
+    exec(text)
+    return plt
 
-def data_format_transformation2(description):
-    return  f"""
-Given the following dataset description for data in a Human Activity Recognition Context delimited by ''':
-''' 
-{description} 
-'''
-Use the information from this description as well as a .txt file that contains the data to generate python code that produces a fixed format dataframe.
-
-The format should look like this:
-<Sub_id | Sensor_1 | Sensor_2 | ... | Sensor_n | Activity_ID
-1 | 0.93 | 0.88 | ... | 2.33 | 0 
-... | ... | ... | ... | ... | ... > 
-
-Columns in the .txt file are separated by an empty space. Each sensor is in a separate column. 
-These columns do not have headers. 
-The column names have to be inferred from the dataset description. 
-If there are additional columns in the .txt file you can also include them in the format if you know what the column name should be.
-You need to infer the sub_id from the title of the file which will typically be in the format <sub_id.txt>.
-The title of this file is {'S01R01.txt'}. Make the sub_id the index of the dataframe.
-
-Your answer should only consist of the code with comments.
-
-"""
+# another small function for openai response but without the role for exercise 1
+def get_completion_chat(prompt, model):
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=prompt,
+        temperature=0, # this is the degree of randomness of the model's output
+    )
+    return response.choices[0].message["content"]

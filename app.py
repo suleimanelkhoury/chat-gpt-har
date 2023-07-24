@@ -6,7 +6,6 @@ import logging
 import base64
 # Key
 openai.api_key = "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"
-#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
 
 # String variables to use throughout the code
 title_html = """<h1><center>CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR) </center></h1>"""
@@ -14,10 +13,10 @@ description = """<p><center>The following code extracts and analyzes information
 pybliometrics ="""<p><center>Key needed for pybliometrics.cfg</b></center></p>"""
 code_area = """<p><center>Execute Code Area</b></center></p>"""
 system_message = {"role": "system", "content": "You are a helpful assistant."}
-# Query records, python version 3.9+ is recommended (the newer the better)
 
-
+# Chatgpt models (can be switched during runtime)
 available_models = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-3.5-turbo-0613","gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613"]
+
 # logging
 os.makedirs("gpt_log", exist_ok=True)
 try:
@@ -81,23 +80,23 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
     gr.Markdown(description)
     state = gr.State([])  # used to store the message history of each user session.
     with gr.Row():
-        with gr.Column(scale=2): # main chatbot
+        with gr.Column(scale=2):  # main chatbot
             chatbot = gr.Chatbot(value=[], elem_id="chatbot").style(height=800)
         with gr.Column(scale=1):
-            with gr.Row():
+            with gr.Row():  # Choose Model and Clear Button
                 drop = gr.Dropdown(available_models, value="gpt-3.5-turbo", label="model")
                 clear = gr.Button("Clear", variant="secondary");
                 clear.style(size="sm")
                 clear.click(lambda: None, None, chatbot, queue=False).success(init_history, [state], [state])
-            with gr.Row():
-                with gr.Tab("Important Infromation Presentation") as related_work_listing:
+            with gr.Row():  # the five tabs for the exercises
+                with gr.Tab("Important Information Presentation") as important_information_tab:  # first exercise
                     with gr.Row():
                         description3 = gr.Textbox(placeholder="Enter Dataset Description", label="Description").style(container=False)
                     with gr.Row():
                         information_presentation = gr.Button("Get Important Information Pipeline", variant="secondary")
                         combining_result8 = gr.Textbox(visible=False)
                         click_handle8 = information_presentation.click(important_information_pipeline, description3, chatbot)
-                with gr.Tab("Related Work Listing") as important_information_presentation:
+                with gr.Tab("Related Work Listing") as important_information_presentation:  # second exercise
                     with gr.Row():
                         paper_name = gr.Textbox(placeholder="Enter Paper Name Here",label="Paper Name").style(container=False)
                         number_of_papers = gr.Slider(2, 20, value=10, label="Count",step=1)
@@ -120,30 +119,30 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                                     bot, [chatbot, state, drop], [chatbot, state]
                             )
                             gr.Markdown(pybliometrics)
-                with gr.Tab("Tool and Algorithm Recommendations:") as tool_and_algorithm_recommendation:
-                    with gr.Row():
+                with gr.Tab("Tool and Algorithm Recommendations") as tool_and_algorithm_recommendation:  # third exercise
+                    with gr.Row():  # textbox for dataset description and a slider for the number of algorithms returned
                         description = gr.Textbox(placeholder="Enter sample Description", label="Sample").style(container=False)
                         number_of_algorithms = gr.Slider(2, 20, value=10, label="Count",step=1)
-                    with gr.Row():
+                    with gr.Row():  # apply button
                         algorithm_gpt = gr.Button("Algorithm Recommendation Prompt", variant="secondary")
                         combining_result4 = gr.Textbox(visible=False)
                         click_handle4 = algorithm_gpt.click(algorithm_recommendation, [description, number_of_algorithms], combining_result4).then(user, [combining_result4, chatbot], [combining_result4, chatbot]).then(
                                 bot, [chatbot, state, drop], [chatbot, state]
                         )
-                with gr.Tab("Data Exploration Results") as data_exploration_results:
-                    with gr.Row():
+                with gr.Tab("Data Exploration Results") as data_exploration_results:  # fourth exercise
+                    with gr.Row():  # Two textboxes for dataset and sample description and a slider for the number of lines for the head of file given
                         description2 = gr.Textbox(placeholder="Enter Dataset Description", label="Description").style(container=False)
                         sample_description = gr.Textbox(placeholder="Enter Sample Description", label="Sample").style(container=False)
                         with gr.Column(scale=1):
                             number_of_lines = gr.Slider(2, 10, value=5, label="Count",step=1)
-                    with gr.Column(container=False):
+                    with gr.Column(container=False):  # upload and display file
                         file_output = gr.File(type="binary")
                         upload_button = gr.UploadButton("Click to Upload a File", file_types=["file"])
                         upload_button.upload(upload_file, upload_button, file_output, show_progress=True)
                         viewer_button = gr.Button("View file")
                         file_out = gr.HTML()
                         viewer_button.click(view_file, inputs=file_output, outputs=file_out)
-                    with gr.Row():
+                    with gr.Row():  # Buttons for the data visualization amd descriptive statistics prompts
                         data_exploration_prompt = gr.Button("Data Visualisation Prompt", variant="secondary")
                         file_header = gr.Textbox(visible=False)
                         combining_result5 = gr.Textbox(visible=False)
@@ -162,7 +161,7 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                                 user, [combining_result6, chatbot], [combining_result6, chatbot]).then(
                                 bot, [chatbot, state, drop], [chatbot, state]
                         )
-                    with gr.Row():
+                    with gr.Row():  # button for the pipeline function for the fourth exercise
                         pipeline1 = gr.Button("Pipeline", variant="primary")
                         file_header3 = gr.Textbox(visible=False)
                         sample_desc = gr.Textbox(visible=False)
@@ -171,17 +170,17 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                         click_handle7 = pipeline1.click(read_n,[file_output,number_of_lines],file_header3).then(
                             data_exploration_pipeline,[chatbot,description2,file_header3,sample_desc,number_of_lines],chatbot
                         )
-                with gr.Tab("Data Format Transformation") as data_transformation:
-                    with gr.Row():
+                with gr.Tab("Data Format Transformation") as data_transformation: # fifth exercise
+                    with gr.Row():  # textbox for dataset description and a slider for the number of algorithms returned
                         description3 = gr.Textbox(placeholder="Enter sample Description", label="Sample").style(container=False)
                         number_of_rows4 = gr.Slider(2, 20, value=5, label="Rows",step=1)
-                        with gr.Column(scale=1):
+                        with gr.Column(scale=1):  # upload file
                             file_output2 = gr.File(type="binary")
                             file_header4 = gr.Textbox(visible=False)
                         upload_button = gr.UploadButton("Click to Select a File", file_types=["file"])
                         upload_button.upload(upload_file, upload_button, file_output2, show_progress=True)
                         combining_result9 = gr.Textbox(visible=False)
-                        with gr.Column(scale=1):
+                        with gr.Column(scale=1):  # perform the prompt for the fifth exercise button
                             data_button = gr.Button("Prompt", variant="primary")
                             click_handle9 = data_button.click(
                                     read_n,[file_output,number_of_rows4],file_header4).then(
@@ -190,13 +189,13 @@ with gr.Blocks(title="ChatGPT Academic Optimization", theme=kit.theme) as demo:
                                     bot, [chatbot, state, drop], [chatbot, state]
                             )
 
-    with gr.Row():
+    with gr.Row():  # plot results part
         #gr.Markdown(code_area)
         with gr.Accordion("Code Display Area", open=False):
-            with gr.Row():
+            with gr.Row():  # code field and plot output field
                 code = gr.Code()
                 plot = gr.Plot()
-            with gr.Row():
+            with gr.Row():  # perform the code given button
                 execute1 = gr.Button("Execute Code", variant="secondary")
                 execute_handle = execute1.click(execute,code,plot)
     # Ribbon displays the interaction between the switch and the ribbon

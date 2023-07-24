@@ -1,4 +1,4 @@
-#!/home/sisso/Desktop/ChatGPT/SmartDataEins/venv/bin/python3
+#!/media/sisso/sisso1/ChatGPT/SmartDataEins/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
