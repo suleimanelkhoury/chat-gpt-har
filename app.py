@@ -4,8 +4,8 @@ import gradio as gr
 import kittheme as kit
 import logging
 import base64
-# Key
-openai.api_key = "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"
+# add your openai key here
+openai.api_key = ""
 
 # String variables to use throughout the code
 title_html = """<h1><center>CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR) </center></h1>"""
