@@ -1,4 +1,4 @@
-This is the readme of the web-based CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR)
+This is the readme of the web-based "CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR)" project.
 1. Download the project
 ```
 git clone https://git.scc.kit.edu/chat-gpt-har
