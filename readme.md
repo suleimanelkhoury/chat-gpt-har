@@ -1,52 +1,63 @@
-This is the readme of the web-based "CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR)" project.
-1. Download the project
-```
-git clone https://git.scc.kit.edu/chat-gpt-har
+# Web-based CHATGPT-powered Prompt for Human Activity Recognition (HAR)
+
+## Project Overview
+
+This repository contains a web-based application designed to leverage ChatGPT for Human Activity Recognition (HAR) tasks. Follow the instructions below to set up and run the project.
+
+## Getting Started
+
+### 1. Clone the Repository
+```bash
+git clone https://git.scc.kit.edu/chat-gpt-har](https://github.com/suleimanelkhoury/chat-gpt-har.git
 cd chat-gpt-har
 ```
-2. Install the dependencies
-```
+
+### 2. Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
-3. Insert OpenAI-API Key:
+
+### 3. Configure OpenAI API Key
+Open `app.py` and insert your OpenAI API key:
+```python
+openai.api_key = "Your_Key"
 ```
-Insert your OpenAI Key in the app.py
-openai.api_key ="Your_Key"
-```
-4. Run it
-```
+
+### 4. Run the Application
+```bash
 python app.py
 ```
 
-####### Project Files #######
-app.py contains chatgpt required functions and the Gradio UI
+## Project Structure
 
-functions.py contains all the prompts and pipelines for the exercises
+- **app.py**: Contains the ChatGPT integration and the Gradio-based user interface.
+- **functions.py**: Includes all prompts and processing pipelines for the HAR exercises.
+- **kittheme.py**: Provides a custom theme for the Gradio UI, using the Karlsruhe Institute of Technology color scheme.
+- **requirements.txt**: Lists all dependencies required for the project.
 
-kittheme.py contains a theme imported by the Gradio UI with the colors of the karlsruher institut für technologie
+## User Interface Guide
 
-requirements.txt contains the dependencies used
+### Model Selection
+- **Location**: Top-right corner.
+- **Description**: Choose your preferred ChatGPT model from a dropdown menu. The default setting is GPT-3.5-turbo.
 
-#######Explaination of the User Interface########
-Model:
-In the top right corner you can select your preferred ChatGPT model via a dropdown menu. Standard setting is the gpt-3.5-turbo. 
+### Important Information Representation
+- **Function**: Input a dataset description to receive a structured and standardized JSON output of the key information.
 
-Important Information Representation:
--In this tab you can input a dataset description and get as an output a structured and standardized JSON format of the important information.
+### Related Work Listing
+- **Function**: Enter a paper title and specify the number of related works to display using the "count" option.
+  - **"Pure GPT" Button**: Displays relevant related papers recommended by ChatGPT.
+  - **"Get Citations With Scholarly" Button**: Shows papers that cite the entered paper.
+  - **"Get References With Plybliometrics" Button**: Outputs references from the entered paper (requires a key in `pybliometrics.cfg`).
 
-Related Work Listing 
--You can enter a paper name and select with "count" how many related work you want to get displayed. 
--The button "Pure GPT" gives relevant related papers that are recommended by ChatGPT.
--With "Get Citations With Scholarly" you get papers that cite the one inputted.
--"Get References With Plybliometrics" outputs the papers which are referenced in the input paper. (A key is needed for pybliometrics.cfg.) 
+### Tools and Algorithm Recommendations
+- **Function**: Provides recommended algorithms based on the input.
 
-Tools and Algorithm Recommendations 
--Gives several suggested algorithms as an output.
+### Data Exploration
+- **Function**: Upload a `.txt` file from the Human Activity Recognition dataset.
+  - **"count" Option**: Adjust the number of rows used for data exploration.
+  - **"Data Visualization Prompt" Button**: Generates code for visualizing the data.
+  - **"Descriptive Statistics Prompt" Button**: Outputs a statistical analysis of the input data.
 
-Data Exploration
--In this tab you can upload a .txt file from the Human Activity Recognition dataset. Via "count" the number of rows used for Data Exploration can be changed.
--"Data Visualization Prompt" gives code that can be run to visualize the data.
--"Descriptive Statistics Prompt" gives out a statistical analysis of the input data.
-
-Data Format Transformation
--Transform input data into a structured format. 
+### Data Format Transformation
+- **Function**: Transforms input data into a structured format.
