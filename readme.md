@@ -1,9 +1,8 @@
-This is the readme of the third exercise of Group 1 of the course Smart Data Analytics.
-Tobias Biegert, Suleiman Elkhoury, Moritz Diener
+This is the readme of the web-based CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR)
 1. Download the project
 ```
-git clone https://git.scc.kit.edu/uzlsf/smartdataeins
-cd smartdataeins
+git clone https://git.scc.kit.edu/chat-gpt-har
+cd chat-gpt-har
 ```
 2. Install the dependencies
 ```
@@ -26,8 +25,7 @@ functions.py contains all the prompts and pipelines for the exercises
 
 kittheme.py contains a theme imported by the Gradio UI with the colors of the karlsruher institut für technologie
 
-requirements.txt contains the dependencies used 
-
+requirements.txt contains the dependencies used
 
 #######Explaination of the User Interface########
 Model:

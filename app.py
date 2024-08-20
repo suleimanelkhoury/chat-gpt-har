@@ -4,8 +4,8 @@ import gradio as gr
 import kittheme as kit
 import logging
 import base64
-# add your openai key here
-openai.api_key = ""
+# Key
+openai.api_key = "" # insert your openai key here
 
 # String variables to use throughout the code
 title_html = """<h1><center>CHATGPT-based  Prompt  for  Human  Activity  Recognition  (HAR) </center></h1>"""
@@ -71,7 +71,7 @@ def view_file(file_data):
     if file_data[:4] == b'%PDF':
         return f"<embed src='data:application/pdf;base64,{b64_data}' type='application/pdf' width='100%' height='800px' />"
     else:
-        return f"<embed src='data:text/plain;base64,{b64_data}' type='text/plain' width='100%' height='500px' />"
+        return f"<embed src='data:text/plain;base64,{b64_data}' type='text/plain' width='100%' height='500px'/>"
 
 
 # main interface
